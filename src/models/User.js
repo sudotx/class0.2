@@ -10,7 +10,8 @@ const userSchema = new Schema(
             trim: true,
             lowercase: true,
         },
-        password: { type: String, required: true },
+        password: { type: String },
+        googleId: { type: String, unique: true, sparse: true },
         accountBalance: {
             type: Number
         },

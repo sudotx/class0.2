@@ -6,10 +6,19 @@ import {
     sendWelcomeEmail,
     sendDeletionScheduledEmail,
 } from "../utils/email.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 const DELETION_GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
 
 const router = Router();
+
+router.get("/me", requireAuth, async (req, res) => {
+    const user = await User.findOne({ _id: req.userId }).active().select("-password");
+    if (!user) {
+        return res.status(404).json({ error: "user not found" });
+    }
+    res.json(user);
+});
 
 router.post("/", async (req, res) => {
     const { username, email, password } = req.body;

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Auth Demo — API Key</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main>
+        <h1>API Key Demo</h1>
+        <p class="subtitle">A pre-shared secret string for server-to-server / machine access. Log in once to mint a key, then use only the key from there on.</p>
+
+        <form id="registerForm">
+            <h2>Register</h2>
+            <input name="username" placeholder="username" required />
+            <input name="email" type="email" placeholder="email" required />
+            <input name="password" type="password" placeholder="password" required />
+            <button type="submit">Register</button>
+        </form>
+
+        <form id="issueForm">
+            <h2>Get an API key</h2>
+            <input name="username" placeholder="username" required />
+            <input name="password" type="password" placeholder="password" required />
+            <button type="submit">Issue key</button>
+        </form>
+
+        <section id="keyPanel" hidden>
+            <p>Your API key (shown once):</p>
+            <code id="apiKeyValue"></code>
+            <button id="callProtectedBtn">Call /users/me with this key</button>
+        </section>
+
+        <pre id="log"></pre>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>

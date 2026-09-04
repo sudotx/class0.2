@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { googleLoginUrl } from '../api/auth'
 
 export default function Login() {
   const { login } = useAuth()
@@ -49,6 +50,12 @@ export default function Login() {
           {submitting ? 'Logging in...' : 'Login'}
         </button>
       </form>
+
+      <div className="divider">or</div>
+      <a className="button button-google" href={googleLoginUrl}>
+        Sign in with Google
+      </a>
+
       <p>
         No account? <Link to="/register">Register</Link>
       </p>

@@ -6,6 +6,7 @@ import Nav from './components/Nav'
 
 import Login from './pages/Login'
 import Register from './pages/Register'
+import OAuthCallback from './pages/OAuthCallback'
 import Profile from './pages/Profile'
 import Products from './pages/Products'
 import ProductDetail from './pages/ProductDetail'
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/products" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/oauth/callback" element={<OAuthCallback />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/checkout/callback" element={<CheckoutCallback />} />

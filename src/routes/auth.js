@@ -14,8 +14,9 @@ router.post("/register", async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ username, email, password: hashedPassword });
-        res.status(201).json({ status: "user registered", userId: user._id });
+        const role = email.toLowerCase() === process.env.ADMIN_EMAIL?.toLowerCase() ? "admin" : "user";
+        const user = await User.create({ username, email, password: hashedPassword, role });
+        res.status(201).json({ status: "user registered", userId: user._id, role: user.role });
     } catch (error) {
         if (error.code === 11000) {
             return res.status(409).json({ error: "username or email already taken" });

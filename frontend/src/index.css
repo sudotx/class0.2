@@ -1,0 +1,283 @@
+:root {
+  --text: #3f3d45;
+  --text-h: #0d0c10;
+  --bg: #ffffff;
+  --bg-muted: #f6f5f8;
+  --border: #e1dfe6;
+  --accent: #6d28d9;
+  --accent-hover: #5b21b6;
+  --error: #b91c1c;
+  --success: #15803d;
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  font: 16px/1.5 var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #d1d0d6;
+    --text-h: #f5f4f7;
+    --bg: #17161b;
+    --bg-muted: #201f26;
+    --border: #34323b;
+    --accent: #a78bfa;
+    --accent-hover: #c4b5fd;
+    --error: #f87171;
+    --success: #4ade80;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text-h);
+  margin: 0 0 12px;
+}
+
+a {
+  color: var(--accent);
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.nav .brand {
+  font-weight: 700;
+  font-size: 20px;
+  text-decoration: none;
+  color: var(--text-h);
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-links a,
+.nav-links button {
+  text-decoration: none;
+  color: var(--text);
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.card {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  text-align: left;
+}
+
+input,
+textarea,
+select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+button {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--error);
+}
+
+.success {
+  color: var(--success);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.product-card {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-card img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.product-image {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.price {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.add-to-cart {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.add-to-cart input {
+  width: 70px;
+}
+
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.cart-list,
+.order-list,
+.admin-product-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cart-list li,
+.admin-product-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.cart-list input {
+  width: 60px;
+}
+
+.cart-summary {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.order-list li {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  text-align: left;
+}
+
+.status {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.status-paid {
+  color: var(--success);
+}
+
+.status-failed {
+  color: var(--error);
+}
+
+.status-pending {
+  color: var(--text);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}

@@ -1,6 +1,7 @@
 import cors from "cors";
 import express, { json } from "express";
 import { connect } from "mongoose";
+import cookieParser from "cookie-parser";
 
 import { configDotenv } from "dotenv";
 import usersRouter from "./routes/users.js";
@@ -22,6 +23,7 @@ app.use(cors({ origin: process.env.FRONTEND_URL?.split(",") ?? [], credentials: 
 app.post("/checkout/webhook", paystackWebhookRaw, paystackWebhookHandler);
 
 app.use(json());
+app.use(cookieParser());
 
 try {
   const conn = await connect(process.env.MONGO_URI);

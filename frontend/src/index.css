@@ -177,16 +177,6 @@ button:disabled {
   background: var(--bg-muted);
 }
 
-.api-key-value {
-  word-break: break-all;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-family: monospace;
-  font-size: 13px;
-}
-
 .error {
   color: var(--error);
 }

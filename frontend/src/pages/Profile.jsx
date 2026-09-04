@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import * as usersApi from '../api/users'
-import { createApiKey } from '../api/auth'
 
 export default function Profile() {
   const { user, refreshMe } = useAuth()
@@ -18,8 +17,6 @@ export default function Profile() {
     },
   })
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' })
-  const [apiKeyPassword, setApiKeyPassword] = useState('')
-  const [issuedApiKey, setIssuedApiKey] = useState(null)
   const [status, setStatus] = useState(null)
   const [error, setError] = useState(null)
 
@@ -48,19 +45,6 @@ export default function Profile() {
       await usersApi.updatePassword(passwordForm)
       setPasswordForm({ currentPassword: '', newPassword: '' })
       setStatus('Password updated.')
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  async function handleApiKeySubmit(e) {
-    e.preventDefault()
-    setError(null)
-    setStatus(null)
-    try {
-      const { apiKey } = await createApiKey({ username: user.username, password: apiKeyPassword })
-      setIssuedApiKey(apiKey)
-      setApiKeyPassword('')
     } catch (err) {
       setError(err.message)
     }
@@ -159,28 +143,6 @@ export default function Profile() {
         </label>
         <button type="submit">Update password</button>
       </form>
-
-      <h2>API keys</h2>
-      <p>Generate a key for machine-to-machine access (sent as an x-api-key header).</p>
-      <form onSubmit={handleApiKeySubmit}>
-        <label>
-          Current password
-          <input
-            type="password"
-            value={apiKeyPassword}
-            onChange={(e) => setApiKeyPassword(e.target.value)}
-            required
-          />
-        </label>
-        <button type="submit">Generate API key</button>
-      </form>
-      {issuedApiKey && (
-        <p>
-          New key (copy it now, it won't be shown again):
-          <br />
-          <code className="api-key-value">{issuedApiKey}</code>
-        </p>
-      )}
     </div>
   )
 }

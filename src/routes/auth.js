@@ -5,8 +5,7 @@ import bcrypt from "bcrypt";
 import { OAuth2Client } from "google-auth-library";
 
 import User from "../models/User.js";
-import ApiKey from "../models/ApiKey.js";
-import { signToken, newApiKey } from "../middleware/requireAuth.js";
+import { signToken } from "../middleware/requireAuth.js";
 
 const router = Router();
 const oauthClient = new OAuth2Client(
@@ -48,23 +47,6 @@ router.post("/login", async (req, res) => {
     }
 
     res.json({ status: "logged in", token: signToken(user._id) });
-});
-
-// Machine-to-machine: authenticate once with username/password to mint an
-// API key, then use that key (x-api-key header) for every subsequent call.
-router.post("/api-keys", async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ error: "username and password are required" });
-    }
-
-    const user = await User.findOne({ username }).active();
-    if (!user?.password || !(await bcrypt.compare(password, user.password))) {
-        return res.status(401).json({ error: "invalid credentials" });
-    }
-
-    const apiKey = await ApiKey.create({ key: newApiKey(), userId: user._id });
-    res.status(201).json({ status: "api key issued", apiKey: apiKey.key });
 });
 
 router.get("/google", (req, res) => {

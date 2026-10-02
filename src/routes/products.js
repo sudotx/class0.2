@@ -5,6 +5,7 @@ import { requireAuth } from "../middleware/requireAuth.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import { upload } from "../middleware/upload.js";
 import { uploadImage, destroyImage } from "../utils/cloudinary.js";
+import { notifyAdmin } from "../utils/telegram.js";
 
 const router = Router();
 
@@ -51,6 +52,7 @@ router.post("/", requireAuth, requireAdmin, upload.array("images", 5), async (re
             createdBy: req.userId,
         });
 
+        notifyAdmin(`📦 New product: <b>${product.name}</b> — ₦${product.price} (stock ${product.stock})`);
         res.status(201).json(product);
     } catch (error) {
         console.error(error);

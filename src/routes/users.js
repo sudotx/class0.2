@@ -2,13 +2,12 @@ import { Router } from "express";
 import bcrypt from "bcrypt";
 
 import User from "../models/User.js";
-import { sendDeletionScheduledEmail } from "../utils/email.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { upload } from "../middleware/upload.js";
 import { uploadImage, destroyImage } from "../utils/cloudinary.js";
 
 const DELETION_GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
-const PROFILE_FIELDS = ["username", "dateOfBirth", "phone", "address"];
+const PROFILE_FIELDS = ["username", "dateOfBirth", "phone"];
 
 const router = Router();
 
@@ -97,8 +96,6 @@ router.delete("/me", requireAuth, async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: "user not found" });
         }
-
-        sendDeletionScheduledEmail(user.email, user.username, scheduledDeletionAt);
 
         res.status(202).json({
             status: "deletion scheduled",

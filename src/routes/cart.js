@@ -3,6 +3,7 @@ import { Router } from "express";
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { notifyAdmin } from "../utils/telegram.js";
 
 const router = Router();
 
@@ -10,7 +11,10 @@ router.use(requireAuth);
 
 async function getOrCreateCart(userId) {
     let cart = await Cart.findOne({ userId });
-    if (!cart) cart = await Cart.create({ userId, items: [] });
+    if (!cart) {
+        cart = await Cart.create({ userId, items: [] });
+        notifyAdmin(`🛒 New cart started by user ${userId}`);
+    }
     return cart;
 }
 

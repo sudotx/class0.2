@@ -1,0 +1,49 @@
+config:
+  target: "http://localhost:8000"
+  phases:
+    - duration: 60
+      arrivalRate: 20
+      name: "Warming up"
+    - duration: 240
+      arrivalRate: 20
+      rampTo: 100
+      name: "Ramping up"
+    - duration: 500
+      arrivalRate: 100
+      name: "Sustained load"
+  processor: "./processor.cjs"
+
+# Run `node scripts/seed-load-test-users.js` once before load-testing, and
+# `node scripts/cleanup-load-test-users.js` after, to add/remove the pool of
+# loadtest0..loadtest49 accounts this flow logs in as.
+#
+# Deliberately stops at "add to cart" — checkout/initialize calls a real
+# Paystack API and fires a Telegram admin notification per order, which isn't
+# safe to hit thousands of times from a load test.
+scenarios:
+  - name: "Browse, log in, add to cart"
+    flow:
+      - get:
+          url: "/products"
+          capture:
+            - json: "$.products[0]._id"
+              as: "productId"
+      - think: 1
+      - get:
+          url: "/products/{{ productId }}"
+      - think: 2
+      - function: "pickUser"
+      - post:
+          url: "/auth/login"
+          beforeRequest: "setBasicAuthHeader"
+          capture:
+            - json: "$.token"
+              as: "token"
+      - think: 1
+      - post:
+          url: "/cart/items"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            productId: "{{ productId }}"
+            quantity: 1

@@ -1,9 +1,9 @@
 export const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
-async function request(path, { method = 'GET', body, isFormData = false } = {}) {
+async function request(path, { method = 'GET', body, isFormData = false, headers: extraHeaders } = {}) {
   const token = localStorage.getItem('token')
-  const headers = {}
-  if (token) headers.Authorization = `Bearer ${token}`
+  const headers = { ...extraHeaders }
+  if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`
   if (body && !isFormData) headers['Content-Type'] = 'application/json'
 
   const res = await fetch(`${BASE_URL}${path}`, {

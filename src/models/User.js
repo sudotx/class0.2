@@ -17,13 +17,6 @@ const userSchema = new Schema(
         avatarUrl: { type: String },
         avatarPublicId: { type: String },
         phone: { type: String, trim: true },
-        address: {
-            line1: { type: String, trim: true },
-            city: { type: String, trim: true },
-            state: { type: String, trim: true },
-            country: { type: String, trim: true },
-            postalCode: { type: String, trim: true },
-        },
         deletionRequestedAt: { type: Date, default: null },
         scheduledDeletionAt: { type: Date, default: null },
     },

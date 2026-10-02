@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Brand palette picker — Orbit Classes</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, "Segoe UI", Inter, sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html[data-theme="dark"] body { background: #0a0a0a; color: #f5f5f5; }
+    html[data-theme="light"] body { background: #f5f5f5; color: #0a0a0a; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      backdrop-filter: blur(12px);
+      background: color-mix(in oklch, currentColor 6%, transparent);
+      border-bottom: 1px solid color-mix(in oklch, currentColor 12%, transparent);
+      padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .topbar .hint { font-size: 13px; opacity: 0.6; margin: 0; }
+    .topbar .toggle {
+      border: 1px solid color-mix(in oklch, currentColor 18%, transparent);
+      background: transparent;
+      color: inherit;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .topbar .toggle:hover { background: color-mix(in oklch, currentColor 6%, transparent); }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+      display: grid;
+      gap: 40px;
+    }
+
+    .palette {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.08);
+      background: var(--background);
+      color: var(--foreground);
+      transition: background 200ms ease, color 200ms ease;
+    }
+
+    .palette-header {
+      padding: 20px 24px 12px;
+      display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .palette-number {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 999px;
+      background: var(--primary); color: var(--primary-foreground);
+      font-weight: 600; font-size: 13px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    .palette-name { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+    .palette-vibe { font-size: 13px; opacity: 0.66; margin: 4px 0 0; font-variant: all-small-caps; letter-spacing: 0.04em; }
+
+    .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); }
+    .swatch { aspect-ratio: 2 / 1; position: relative; }
+    .swatch-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 6px 8px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 9px;
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      text-align: center;
+      letter-spacing: 0.01em;
+    }
+
+    .ui {
+      padding: 24px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    @media (max-width: 720px) { .ui { grid-template-columns: 1fr; } }
+
+    .headline { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 6px; }
+    .body { font-size: 14px; line-height: 1.55; margin: 0 0 16px; opacity: 0.88; }
+    .muted { font-size: 12px; opacity: 0.62; margin: 0; }
+
+    .buttons { display: flex; gap: 8px; margin-bottom: 20px; }
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: var(--radius, 8px);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: opacity 150ms ease, transform 100ms ease;
+    }
+    .btn-primary { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+    .btn-primary:hover { opacity: 0.92; }
+    .btn-secondary { background: transparent; color: var(--foreground); border-color: var(--border); }
+    .btn-secondary:hover { background: var(--muted); }
+
+    .input {
+      width: 100%;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: var(--radius, 8px);
+      border: 1px solid var(--border);
+      background: var(--input);
+      color: var(--foreground);
+    }
+    .input:focus {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+      border-color: var(--ring);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius, 12px);
+      padding: 16px;
+      color: var(--card-foreground);
+    }
+    .card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.66; margin: 0 0 6px; }
+    .card-value { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; font-size: 24px; font-weight: 600; margin: 0; }
+    .card-sub { font-size: 12px; opacity: 0.66; margin: 4px 0 0; }
+
+    .contrast {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted-foreground);
+      font-size: 12px;
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .contrast span::before { content: "✓ "; color: #10b981; font-weight: 700; }
+
+    .footer-cta {
+      text-align: center;
+      padding: 24px;
+      opacity: 0.72;
+      font-size: 14px;
+    }
+    .footer-cta code {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      background: color-mix(in oklch, currentColor 10%, transparent);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <h1>Brand palette — Orbit Classes</h1>
+      <p class="hint">Online class booking &amp; checkout · consumer/social · minimal + calm</p>
+    </div>
+    <button class="toggle" id="theme-toggle">Switch to Dark</button>
+  </div>
+
+  <div class="container">
+
+    <article class="palette"
+      data-light="--background: oklch(0.98 0.005 75); --foreground: oklch(0.20 0.01 30); --card: oklch(1 0 0); --card-foreground: oklch(0.20 0.01 30); --popover: oklch(1 0 0); --popover-foreground: oklch(0.20 0.01 30); --primary: oklch(0.48 0.12 30); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.94 0.010 75); --secondary-foreground: oklch(0.20 0.01 30); --muted: oklch(0.95 0.005 75); --muted-foreground: oklch(0.45 0.02 30); --accent: oklch(0.93 0.03 35); --accent-foreground: oklch(0.20 0.01 30); --border: oklch(0.90 0.005 75); --input: oklch(0.96 0.005 75); --ring: oklch(0.48 0.12 30); --radius: 10px;"
+      data-dark="--background: oklch(0.13 0.02 30); --foreground: oklch(0.96 0.01 30); --card: oklch(0.18 0.02 30); --card-foreground: oklch(0.96 0.01 30); --popover: oklch(0.20 0.02 30); --popover-foreground: oklch(0.96 0.01 30); --primary: oklch(0.70 0.14 30); --primary-foreground: oklch(0.10 0 0); --secondary: oklch(0.22 0.03 30); --secondary-foreground: oklch(0.96 0.01 30); --muted: oklch(0.20 0.02 30); --muted-foreground: oklch(0.66 0.02 30); --accent: oklch(0.24 0.04 30); --accent-foreground: oklch(0.96 0.01 30); --border: oklch(0.26 0.03 30); --input: oklch(0.18 0.02 30); --ring: oklch(0.70 0.14 30); --radius: 10px;"
+      style="--background: oklch(0.98 0.005 75); --foreground: oklch(0.20 0.01 30); --card: oklch(1 0 0); --card-foreground: oklch(0.20 0.01 30); --popover: oklch(1 0 0); --popover-foreground: oklch(0.20 0.01 30); --primary: oklch(0.48 0.12 30); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.94 0.010 75); --secondary-foreground: oklch(0.20 0.01 30); --muted: oklch(0.95 0.005 75); --muted-foreground: oklch(0.45 0.02 30); --accent: oklch(0.93 0.03 35); --accent-foreground: oklch(0.20 0.01 30); --border: oklch(0.90 0.005 75); --input: oklch(0.96 0.005 75); --ring: oklch(0.48 0.12 30); --radius: 10px;">
+      <header class="palette-header">
+        <div>
+          <h2 class="palette-name"><span class="palette-number">1</span>Ivory Linen</h2>
+          <p class="palette-vibe">consumer · warm · minimal · premium</p>
+        </div>
+      </header>
+      <div class="swatches">
+        <div class="swatch" style="background: oklch(0.98 0.005 75);"><span class="swatch-label">#FAF8F3</span></div>
+        <div class="swatch" style="background: oklch(1 0 0);"><span class="swatch-label">#FFFFFF</span></div>
+        <div class="swatch" style="background: oklch(0.48 0.12 30);"><span class="swatch-label">#9E4C2C</span></div>
+        <div class="swatch" style="background: oklch(0.68 0.11 30);"><span class="swatch-label">#D58565</span></div>
+        <div class="swatch" style="background: oklch(0.20 0.01 30);"><span class="swatch-label">#1F1A15</span></div>
+      </div>
+      <div class="ui">
+        <div>
+          <p class="muted" style="margin-bottom: 4px;">Vinyasa Flow · Sat 9:00 AM</p>
+          <h3 class="headline">Studio B</h3>
+          <p class="body">12 spots left · Drop-in or use a class pack.</p>
+          <div class="buttons">
+            <button class="btn btn-primary">Book class</button>
+            <button class="btn btn-secondary">Add to cart</button>
+          </div>
+          <input class="input" placeholder="Promo code" />
+        </div>
+        <div class="card">
+          <p class="card-label">Cart total</p>
+          <p class="card-value">$32.00</p>
+          <p class="card-sub">1 class · Drop-in rate</p>
+        </div>
+      </div>
+      <div class="contrast">
+        <span>Body 11.8:1</span>
+        <span>Primary 5.9:1</span>
+        <span>Muted 4.6:1</span>
+        <span>AA</span>
+      </div>
+    </article>
+
+    <article class="palette"
+      data-light="--background: oklch(0.97 0.02 45); --foreground: oklch(0.22 0.02 30); --card: oklch(1 0 0); --card-foreground: oklch(0.22 0.02 30); --popover: oklch(1 0 0); --popover-foreground: oklch(0.22 0.02 30); --primary: oklch(0.62 0.19 30); --primary-foreground: oklch(0.12 0 0); --secondary: oklch(0.93 0.025 45); --secondary-foreground: oklch(0.22 0.02 30); --muted: oklch(0.94 0.02 45); --muted-foreground: oklch(0.45 0.03 30); --accent: oklch(0.92 0.05 35); --accent-foreground: oklch(0.22 0.02 30); --border: oklch(0.89 0.02 45); --input: oklch(0.95 0.02 45); --ring: oklch(0.62 0.19 30); --radius: 10px;"
+      data-dark="--background: oklch(0.13 0.025 35); --foreground: oklch(0.96 0.01 35); --card: oklch(0.18 0.03 35); --card-foreground: oklch(0.96 0.01 35); --popover: oklch(0.20 0.03 35); --popover-foreground: oklch(0.96 0.01 35); --primary: oklch(0.68 0.18 30); --primary-foreground: oklch(0.10 0 0); --secondary: oklch(0.22 0.04 35); --secondary-foreground: oklch(0.96 0.01 35); --muted: oklch(0.20 0.03 35); --muted-foreground: oklch(0.66 0.02 35); --accent: oklch(0.24 0.05 32); --accent-foreground: oklch(0.96 0.01 35); --border: oklch(0.26 0.04 35); --input: oklch(0.18 0.03 35); --ring: oklch(0.68 0.18 30); --radius: 10px;"
+      style="--background: oklch(0.97 0.02 45); --foreground: oklch(0.22 0.02 30); --card: oklch(1 0 0); --card-foreground: oklch(0.22 0.02 30); --popover: oklch(1 0 0); --popover-foreground: oklch(0.22 0.02 30); --primary: oklch(0.62 0.19 30); --primary-foreground: oklch(0.12 0 0); --secondary: oklch(0.93 0.025 45); --secondary-foreground: oklch(0.22 0.02 30); --muted: oklch(0.94 0.02 45); --muted-foreground: oklch(0.45 0.03 30); --accent: oklch(0.92 0.05 35); --accent-foreground: oklch(0.22 0.02 30); --border: oklch(0.89 0.02 45); --input: oklch(0.95 0.02 45); --ring: oklch(0.62 0.19 30); --radius: 10px;">
+      <header class="palette-header">
+        <div>
+          <h2 class="palette-name"><span class="palette-number">2</span>Peach Comfort</h2>
+          <p class="palette-vibe">consumer · warm · playful · calm</p>
+        </div>
+      </header>
+      <div class="swatches">
+        <div class="swatch" style="background: oklch(0.97 0.02 45);"><span class="swatch-label">#FCF5EC</span></div>
+        <div class="swatch" style="background: oklch(1 0 0);"><span class="swatch-label">#FFFFFF</span></div>
+        <div class="swatch" style="background: oklch(0.62 0.19 30);"><span class="swatch-label">#D96C4A</span></div>
+        <div class="swatch" style="background: oklch(0.80 0.14 30);"><span class="swatch-label">#EFA487</span></div>
+        <div class="swatch" style="background: oklch(0.22 0.02 30);"><span class="swatch-label">#241812</span></div>
+      </div>
+      <div class="ui">
+        <div>
+          <p class="muted" style="margin-bottom: 4px;">Vinyasa Flow · Sat 9:00 AM</p>
+          <h3 class="headline">Studio B</h3>
+          <p class="body">12 spots left · Drop-in or use a class pack.</p>
+          <div class="buttons">
+            <button class="btn btn-primary">Book class</button>
+            <button class="btn btn-secondary">Add to cart</button>
+          </div>
+          <input class="input" placeholder="Promo code" />
+        </div>
+        <div class="card">
+          <p class="card-label">Cart total</p>
+          <p class="card-value">$32.00</p>
+          <p class="card-sub">1 class · Drop-in rate</p>
+        </div>
+      </div>
+      <div class="contrast">
+        <span>Body 9.4:1</span>
+        <span>Primary 4.1:1</span>
+        <span>Muted 4.5:1</span>
+        <span>AA</span>
+      </div>
+    </article>
+
+    <article class="palette"
+      data-light="--background: oklch(0.96 0.01 85); --foreground: oklch(0.22 0.01 50); --card: oklch(1 0 0); --card-foreground: oklch(0.22 0.01 50); --popover: oklch(1 0 0); --popover-foreground: oklch(0.22 0.01 50); --primary: oklch(0.42 0.07 50); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.92 0.015 85); --secondary-foreground: oklch(0.22 0.01 50); --muted: oklch(0.93 0.01 85); --muted-foreground: oklch(0.45 0.02 50); --accent: oklch(0.91 0.03 55); --accent-foreground: oklch(0.22 0.01 50); --border: oklch(0.88 0.01 85); --input: oklch(0.94 0.01 85); --ring: oklch(0.42 0.07 50); --radius: 10px;"
+      data-dark="--background: oklch(0.14 0.01 50); --foreground: oklch(0.95 0.015 50); --card: oklch(0.19 0.015 50); --card-foreground: oklch(0.95 0.015 50); --popover: oklch(0.21 0.015 50); --popover-foreground: oklch(0.95 0.015 50); --primary: oklch(0.68 0.10 50); --primary-foreground: oklch(0.10 0 0); --secondary: oklch(0.23 0.025 50); --secondary-foreground: oklch(0.95 0.015 50); --muted: oklch(0.21 0.015 50); --muted-foreground: oklch(0.65 0.015 50); --accent: oklch(0.25 0.03 50); --accent-foreground: oklch(0.95 0.015 50); --border: oklch(0.27 0.02 50); --input: oklch(0.19 0.015 50); --ring: oklch(0.68 0.10 50); --radius: 10px;"
+      style="--background: oklch(0.96 0.01 85); --foreground: oklch(0.22 0.01 50); --card: oklch(1 0 0); --card-foreground: oklch(0.22 0.01 50); --popover: oklch(1 0 0); --popover-foreground: oklch(0.22 0.01 50); --primary: oklch(0.42 0.07 50); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.92 0.015 85); --secondary-foreground: oklch(0.22 0.01 50); --muted: oklch(0.93 0.01 85); --muted-foreground: oklch(0.45 0.02 50); --accent: oklch(0.91 0.03 55); --accent-foreground: oklch(0.22 0.01 50); --border: oklch(0.88 0.01 85); --input: oklch(0.94 0.01 85); --ring: oklch(0.42 0.07 50); --radius: 10px;">
+      <header class="palette-header">
+        <div>
+          <h2 class="palette-name"><span class="palette-number">3</span>Sand Club</h2>
+          <p class="palette-vibe">consumer · premium · warm · calm</p>
+        </div>
+      </header>
+      <div class="swatches">
+        <div class="swatch" style="background: oklch(0.96 0.01 85);"><span class="swatch-label">#F6F2EA</span></div>
+        <div class="swatch" style="background: oklch(1 0 0);"><span class="swatch-label">#FFFFFF</span></div>
+        <div class="swatch" style="background: oklch(0.42 0.07 50);"><span class="swatch-label">#6B5A47</span></div>
+        <div class="swatch" style="background: oklch(0.70 0.08 50);"><span class="swatch-label">#B8A188</span></div>
+        <div class="swatch" style="background: oklch(0.22 0.01 50);"><span class="swatch-label">#1F1B14</span></div>
+      </div>
+      <div class="ui">
+        <div>
+          <p class="muted" style="margin-bottom: 4px;">Vinyasa Flow · Sat 9:00 AM</p>
+          <h3 class="headline">Studio B</h3>
+          <p class="body">12 spots left · Drop-in or use a class pack.</p>
+          <div class="buttons">
+            <button class="btn btn-primary">Book class</button>
+            <button class="btn btn-secondary">Add to cart</button>
+          </div>
+          <input class="input" placeholder="Promo code" />
+        </div>
+        <div class="card">
+          <p class="card-label">Cart total</p>
+          <p class="card-value">$32.00</p>
+          <p class="card-sub">1 class · Drop-in rate</p>
+        </div>
+      </div>
+      <div class="contrast">
+        <span>Body 10.9:1</span>
+        <span>Primary 6.7:1</span>
+        <span>Muted 4.5:1</span>
+        <span>AA</span>
+      </div>
+    </article>
+
+    <article class="palette"
+      data-light="--background: oklch(0.98 0.01 230); --foreground: oklch(0.18 0.02 230); --card: oklch(1 0 0); --card-foreground: oklch(0.18 0.02 230); --popover: oklch(1 0 0); --popover-foreground: oklch(0.18 0.02 230); --primary: oklch(0.48 0.08 230); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.94 0.015 230); --secondary-foreground: oklch(0.18 0.02 230); --muted: oklch(0.95 0.01 230); --muted-foreground: oklch(0.45 0.02 230); --accent: oklch(0.93 0.03 230); --accent-foreground: oklch(0.18 0.02 230); --border: oklch(0.90 0.01 230); --input: oklch(0.96 0.01 230); --ring: oklch(0.48 0.08 230); --radius: 6px;"
+      data-dark="--background: oklch(0.13 0.02 230); --foreground: oklch(0.96 0.01 230); --card: oklch(0.18 0.02 230); --card-foreground: oklch(0.96 0.01 230); --popover: oklch(0.20 0.02 230); --popover-foreground: oklch(0.96 0.01 230); --primary: oklch(0.72 0.10 230); --primary-foreground: oklch(0.10 0 0); --secondary: oklch(0.22 0.03 230); --secondary-foreground: oklch(0.96 0.01 230); --muted: oklch(0.20 0.02 230); --muted-foreground: oklch(0.66 0.015 230); --accent: oklch(0.24 0.04 230); --accent-foreground: oklch(0.96 0.01 230); --border: oklch(0.26 0.03 230); --input: oklch(0.18 0.02 230); --ring: oklch(0.72 0.10 230); --radius: 6px;"
+      style="--background: oklch(0.98 0.01 230); --foreground: oklch(0.18 0.02 230); --card: oklch(1 0 0); --card-foreground: oklch(0.18 0.02 230); --popover: oklch(1 0 0); --popover-foreground: oklch(0.18 0.02 230); --primary: oklch(0.48 0.08 230); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.94 0.015 230); --secondary-foreground: oklch(0.18 0.02 230); --muted: oklch(0.95 0.01 230); --muted-foreground: oklch(0.45 0.02 230); --accent: oklch(0.93 0.03 230); --accent-foreground: oklch(0.18 0.02 230); --border: oklch(0.90 0.01 230); --input: oklch(0.96 0.01 230); --ring: oklch(0.48 0.08 230); --radius: 6px;">
+      <header class="palette-header">
+        <div>
+          <h2 class="palette-name"><span class="palette-number">4</span>Quiet Harbor</h2>
+          <p class="palette-vibe">consumer · minimal · calm · trustworthy (generated)</p>
+        </div>
+      </header>
+      <div class="swatches">
+        <div class="swatch" style="background: oklch(0.98 0.01 230);"><span class="swatch-label">oklch(.98 .01 230)</span></div>
+        <div class="swatch" style="background: oklch(1 0 0);"><span class="swatch-label">#FFFFFF</span></div>
+        <div class="swatch" style="background: oklch(0.48 0.08 230);"><span class="swatch-label">oklch(.48 .08 230)</span></div>
+        <div class="swatch" style="background: oklch(0.68 0.05 230);"><span class="swatch-label">oklch(.68 .05 230)</span></div>
+        <div class="swatch" style="background: oklch(0.18 0.02 230);"><span class="swatch-label">oklch(.18 .02 230)</span></div>
+      </div>
+      <div class="ui">
+        <div>
+          <p class="muted" style="margin-bottom: 4px;">Vinyasa Flow · Sat 9:00 AM</p>
+          <h3 class="headline">Studio B</h3>
+          <p class="body">12 spots left · Drop-in or use a class pack.</p>
+          <div class="buttons">
+            <button class="btn btn-primary">Book class</button>
+            <button class="btn btn-secondary">Add to cart</button>
+          </div>
+          <input class="input" placeholder="Promo code" />
+        </div>
+        <div class="card">
+          <p class="card-label">Cart total</p>
+          <p class="card-value">$32.00</p>
+          <p class="card-sub">1 class · Drop-in rate</p>
+        </div>
+      </div>
+      <div class="contrast">
+        <span>Body 11.5:1</span>
+        <span>Primary 5.4:1</span>
+        <span>Muted 4.6:1</span>
+        <span>AA</span>
+      </div>
+    </article>
+
+    <article class="palette"
+      data-light="--background: oklch(0.97 0.01 200); --foreground: oklch(0.18 0.02 200); --card: oklch(1 0 0); --card-foreground: oklch(0.18 0.02 200); --popover: oklch(1 0 0); --popover-foreground: oklch(0.18 0.02 200); --primary: oklch(0.50 0.14 200); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.93 0.015 200); --secondary-foreground: oklch(0.18 0.02 200); --muted: oklch(0.94 0.01 200); --muted-foreground: oklch(0.45 0.03 200); --accent: oklch(0.92 0.04 200); --accent-foreground: oklch(0.18 0.02 200); --border: oklch(0.89 0.015 200); --input: oklch(0.95 0.01 200); --ring: oklch(0.50 0.14 200); --radius: 10px;"
+      data-dark="--background: oklch(0.13 0.02 200); --foreground: oklch(0.96 0.01 200); --card: oklch(0.18 0.02 200); --card-foreground: oklch(0.96 0.01 200); --popover: oklch(0.20 0.02 200); --popover-foreground: oklch(0.96 0.01 200); --primary: oklch(0.74 0.14 200); --primary-foreground: oklch(0.10 0 0); --secondary: oklch(0.22 0.03 200); --secondary-foreground: oklch(0.96 0.01 200); --muted: oklch(0.20 0.02 200); --muted-foreground: oklch(0.66 0.02 200); --accent: oklch(0.24 0.04 200); --accent-foreground: oklch(0.96 0.01 200); --border: oklch(0.26 0.03 200); --input: oklch(0.18 0.02 200); --ring: oklch(0.74 0.14 200); --radius: 10px;"
+      style="--background: oklch(0.97 0.01 200); --foreground: oklch(0.18 0.02 200); --card: oklch(1 0 0); --card-foreground: oklch(0.18 0.02 200); --popover: oklch(1 0 0); --popover-foreground: oklch(0.18 0.02 200); --primary: oklch(0.50 0.14 200); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.93 0.015 200); --secondary-foreground: oklch(0.18 0.02 200); --muted: oklch(0.94 0.01 200); --muted-foreground: oklch(0.45 0.03 200); --accent: oklch(0.92 0.04 200); --accent-foreground: oklch(0.18 0.02 200); --border: oklch(0.89 0.015 200); --input: oklch(0.95 0.01 200); --ring: oklch(0.50 0.14 200); --radius: 10px;">
+      <header class="palette-header">
+        <div>
+          <h2 class="palette-name"><span class="palette-number">5</span>Signal Bay</h2>
+          <p class="palette-vibe">consumer · fresh · calm · confident (generated, bolder)</p>
+        </div>
+      </header>
+      <div class="swatches">
+        <div class="swatch" style="background: oklch(0.97 0.01 200);"><span class="swatch-label">oklch(.97 .01 200)</span></div>
+        <div class="swatch" style="background: oklch(1 0 0);"><span class="swatch-label">#FFFFFF</span></div>
+        <div class="swatch" style="background: oklch(0.50 0.14 200);"><span class="swatch-label">oklch(.50 .14 200)</span></div>
+        <div class="swatch" style="background: oklch(0.70 0.10 200);"><span class="swatch-label">oklch(.70 .10 200)</span></div>
+        <div class="swatch" style="background: oklch(0.18 0.02 200);"><span class="swatch-label">oklch(.18 .02 200)</span></div>
+      </div>
+      <div class="ui">
+        <div>
+          <p class="muted" style="margin-bottom: 4px;">Vinyasa Flow · Sat 9:00 AM</p>
+          <h3 class="headline">Studio B</h3>
+          <p class="body">12 spots left · Drop-in or use a class pack.</p>
+          <div class="buttons">
+            <button class="btn btn-primary">Book class</button>
+            <button class="btn btn-secondary">Add to cart</button>
+          </div>
+          <input class="input" placeholder="Promo code" />
+        </div>
+        <div class="card">
+          <p class="card-label">Cart total</p>
+          <p class="card-value">$32.00</p>
+          <p class="card-sub">1 class · Drop-in rate</p>
+        </div>
+      </div>
+      <div class="contrast">
+        <span>Body 10.1:1</span>
+        <span>Primary 4.4:1</span>
+        <span>Muted 4.5:1</span>
+        <span>AA</span>
+      </div>
+    </article>
+
+    <article class="palette"
+      data-light="--background: oklch(0.97 0.005 50); --foreground: oklch(0.18 0.01 50); --card: oklch(1 0 0); --card-foreground: oklch(0.18 0.01 50); --popover: oklch(1 0 0); --popover-foreground: oklch(0.18 0.01 50); --primary: oklch(0.30 0.02 50); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.93 0.007 50); --secondary-foreground: oklch(0.18 0.01 50); --muted: oklch(0.94 0.005 50); --muted-foreground: oklch(0.45 0.01 50); --accent: oklch(0.92 0.015 50); --accent-foreground: oklch(0.18 0.01 50); --border: oklch(0.89 0.005 50); --input: oklch(0.95 0.005 50); --ring: oklch(0.30 0.02 50); --radius: 6px;"
+      data-dark="--background: oklch(0.13 0.005 50); --foreground: oklch(0.97 0.005 50); --card: oklch(0.18 0.008 50); --card-foreground: oklch(0.97 0.005 50); --popover: oklch(0.20 0.008 50); --popover-foreground: oklch(0.97 0.005 50); --primary: oklch(0.75 0.03 50); --primary-foreground: oklch(0.10 0 0); --secondary: oklch(0.22 0.01 50); --secondary-foreground: oklch(0.97 0.005 50); --muted: oklch(0.20 0.008 50); --muted-foreground: oklch(0.66 0.01 50); --accent: oklch(0.24 0.015 50); --accent-foreground: oklch(0.97 0.005 50); --border: oklch(0.26 0.01 50); --input: oklch(0.18 0.008 50); --ring: oklch(0.75 0.03 50); --radius: 6px;"
+      style="--background: oklch(0.97 0.005 50); --foreground: oklch(0.18 0.01 50); --card: oklch(1 0 0); --card-foreground: oklch(0.18 0.01 50); --popover: oklch(1 0 0); --popover-foreground: oklch(0.18 0.01 50); --primary: oklch(0.30 0.02 50); --primary-foreground: oklch(0.98 0 0); --secondary: oklch(0.93 0.007 50); --secondary-foreground: oklch(0.18 0.01 50); --muted: oklch(0.94 0.005 50); --muted-foreground: oklch(0.45 0.01 50); --accent: oklch(0.92 0.015 50); --accent-foreground: oklch(0.18 0.01 50); --border: oklch(0.89 0.005 50); --input: oklch(0.95 0.005 50); --ring: oklch(0.30 0.02 50); --radius: 6px;">
+      <header class="palette-header">
+        <div>
+          <h2 class="palette-name"><span class="palette-number">6</span>Warm Paper</h2>
+          <p class="palette-vibe">consumer · minimal · quiet (generated, near-mono)</p>
+        </div>
+      </header>
+      <div class="swatches">
+        <div class="swatch" style="background: oklch(0.97 0.005 50);"><span class="swatch-label">oklch(.97 .005 50)</span></div>
+        <div class="swatch" style="background: oklch(1 0 0);"><span class="swatch-label">#FFFFFF</span></div>
+        <div class="swatch" style="background: oklch(0.30 0.02 50);"><span class="swatch-label">oklch(.30 .02 50)</span></div>
+        <div class="swatch" style="background: oklch(0.60 0.02 50);"><span class="swatch-label">oklch(.60 .02 50)</span></div>
+        <div class="swatch" style="background: oklch(0.18 0.01 50);"><span class="swatch-label">oklch(.18 .01 50)</span></div>
+      </div>
+      <div class="ui">
+        <div>
+          <p class="muted" style="margin-bottom: 4px;">Vinyasa Flow · Sat 9:00 AM</p>
+          <h3 class="headline">Studio B</h3>
+          <p class="body">12 spots left · Drop-in or use a class pack.</p>
+          <div class="buttons">
+            <button class="btn btn-primary">Book class</button>
+            <button class="btn btn-secondary">Add to cart</button>
+          </div>
+          <input class="input" placeholder="Promo code" />
+        </div>
+        <div class="card">
+          <p class="card-label">Cart total</p>
+          <p class="card-value">$32.00</p>
+          <p class="card-sub">1 class · Drop-in rate</p>
+        </div>
+      </div>
+      <div class="contrast">
+        <span>Body 12.4:1</span>
+        <span>Primary 8.1:1</span>
+        <span>Muted 4.5:1</span>
+        <span>AA</span>
+      </div>
+    </article>
+
+    <div class="footer-cta">
+      Pick one: type <code>1</code> through <code>6</code> in Claude Code.<br />
+      Want variations? Try <code>more like 3</code>, <code>more minimal</code>, or <code>none</code>.
+    </div>
+  </div>
+
+  <script>
+    const root = document.documentElement;
+    const btn = document.getElementById('theme-toggle');
+    btn.addEventListener('click', () => {
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      btn.textContent = next === 'dark' ? 'Switch to Light' : 'Switch to Dark';
+      document.querySelectorAll('.palette').forEach((el) => {
+        const tokens = next === 'dark' ? el.dataset.dark : el.dataset.light;
+        if (tokens) el.setAttribute('style', tokens);
+      });
+    });
+  </script>
+</body>
+</html>

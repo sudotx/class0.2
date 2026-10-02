@@ -1,6 +1,5 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import { randomUUID } from "crypto";
-import express from "express";
 
 import Cart from "../models/Cart.js";
 import Order from "../models/Order.js";
@@ -9,14 +8,21 @@ import User from "../models/User.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { computeOrderTotal } from "../utils/orderTotal.js";
 import { initializeTransaction, verifyTransaction, verifyWebhookSignature } from "../utils/paystack.js";
+import { notifyAdmin } from "../utils/telegram.js";
+import { sendOrderCreatedEmail, sendOrderPaidEmail } from "../utils/email.js";
 
 const router = Router();
 
 async function markOrderPaid(order) {
-    if (order.status === "paid") return; // idempotent
+    // Atomic transition: verify polling + the Paystack webhook can all call this
+    // for the same order. Only the call that actually flips the status notifies.
+    const res = await Order.updateOne({ _id: order._id, status: { $ne: "paid" } }, { status: "paid" });
+    if (res.modifiedCount === 0) return; // already paid elsewhere
     order.status = "paid";
-    await order.save();
     await Cart.findOneAndUpdate({ userId: order.userId }, { items: [] });
+    notifyAdmin(`✅ Order <b>${order._id}</b> paid — ₦${order.totalAmount}`);
+    const user = await User.findOne({ _id: order.userId }).active();
+    if (user) sendOrderPaidEmail(user.email, order);
 }
 
 router.post("/initialize", requireAuth, async (req, res) => {
@@ -40,7 +46,7 @@ router.post("/initialize", requireAuth, async (req, res) => {
     }
 
     const reference = randomUUID();
-    const shippingAddress = req.body.shippingAddress || user.address;
+    const shippingAddress = req.body?.shippingAddress;
 
     try {
         const order = await Order.create({
@@ -59,6 +65,10 @@ router.post("/initialize", requireAuth, async (req, res) => {
             callbackUrl: `${process.env.FRONTEND_URL?.split(",")[0]}/checkout/callback`,
         });
 
+        notifyAdmin(
+            `🧾 New order <b>${order._id}</b> — ₦${totalAmount}, ${items.length} item(s) — awaiting payment`,
+        );
+        sendOrderCreatedEmail(user.email, order);
         res.json({ authorizationUrl, orderId: order._id, reference });
     } catch (error) {
         console.error(error);
